@@ -145,8 +145,8 @@ export default function SchedulePage() {
   }, [sections, selectedCatedraKey]);
 
   const pracSections = useMemo(() => catedraSections.filter((s) => s.tipo === "Prac").sort(by<Section>("sectionLabel")), [catedraSections]);
-  const teoSections = useMemo(() => catedraSections.filter((s) => s.tipo === "Teo"), [catedraSections]);
-  const semSections = useMemo(() => catedraSections.filter((s) => s.tipo === "Sem"), [catedraSections]);
+  const teoSections = useMemo(() => catedraSections.filter((s) => s.tipo === "Teo"), [catedraSections]); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const semSections = useMemo(() => catedraSections.filter((s) => s.tipo === "Sem"), [catedraSections]); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const selectedSections = useMemo(() => {
     // Index sections by (catedraId,tipo,label) to resolve requirements across any cátedra

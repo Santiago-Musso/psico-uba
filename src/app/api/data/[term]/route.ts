@@ -1,4 +1,3 @@
-import { NextRequest } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 
@@ -12,10 +11,10 @@ async function readJson(filePath: string) {
   });
 }
 
-export async function GET(req: NextRequest, { params }: { params: { term: string } }) {
+export async function GET(req: Request, context: any) {
   const url = new URL(req.url);
   const file = url.pathname.split("/").pop();
-  const term = params.term;
+  const term = context.params?.term;
 
   if (!file || !/(catedras|sections|meets)\.json$/.test(file)) {
     return new Response("Not found", { status: 404 });
