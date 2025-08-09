@@ -1,8 +1,8 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-export async function GET(_req: Request, context: any) {
-  const { term, file } = context.params || {};
+export async function GET(_req: Request, context: { params: Record<string, string> }) {
+  const { term, file } = context.params || {} as Record<string, string>;
   if (!/(?:^|\/)(catedras|sections|meets)\.json$/.test(file)) {
     return new Response("Not found", { status: 404 });
   }

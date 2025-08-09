@@ -11,7 +11,7 @@ async function readJson(filePath: string) {
   });
 }
 
-export async function GET(req: Request, context: any) {
+export async function GET(req: Request, context: { params: Record<string, string> }) {
   const url = new URL(req.url);
   const file = url.pathname.split("/").pop();
   const term = context.params?.term;
@@ -25,7 +25,7 @@ export async function GET(req: Request, context: any) {
   const dataPath = path.join(repoRoot, "psico-uba-data", term, file);
   try {
     return await readJson(dataPath);
-  } catch (e) {
+  } catch {
     return new Response("Not found", { status: 404 });
   }
 }
