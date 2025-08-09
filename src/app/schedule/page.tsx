@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { ProgramCode, Catedra, Section, Meet } from "@/lib/types";
 
 const TERM = "2025-2";
@@ -426,7 +426,7 @@ export default function SchedulePage() {
             </div>
             <div ref={calendarRef} style={{ position: "relative", height: "calc(100% - 32px)" }}>
               {(() => {
-                const nodes: JSX.Element[] = [];
+                const nodes: ReactNode[] = [];
                 const startHour = Math.floor(timeMin / 60);
                 const endHour = Math.floor(timeMax / 60);
                 for (let hour = startHour; hour <= endHour; hour++) {
