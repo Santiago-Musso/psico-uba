@@ -11,10 +11,11 @@ async function readJson(filePath: string) {
   });
 }
 
-export async function GET(req: Request, context: { params: Record<string, string> }) {
+export async function GET(req: Request) {
   const url = new URL(req.url);
-  const file = url.pathname.split("/").pop();
-  const term = context.params?.term;
+  const parts = url.pathname.split("/").filter(Boolean);
+  const file = parts[parts.length - 1];
+  const term = parts[parts.length - 2];
 
   if (!file || !/(catedras|sections|meets)\.json$/.test(file)) {
     return new Response("Not found", { status: 404 });
