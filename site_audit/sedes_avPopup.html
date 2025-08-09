@@ -1,0 +1,80 @@
+	<meta name="gmapkey" content="ABQIAAAAu6OHOv-9JLzV9X6UtviIGRQopIIxBsJuDHJi0bNkP78CzDcRWBSu0f9aExuAa-zh8N1uWjEfoyHhMg" />
+
+
+    <style>
+      #map-canvas {
+        width: 390px;
+        height: 290px;
+      }
+    </style>
+
+	<script>
+	self.focus();
+		function redireccionar(value)
+		 {
+		   window.location.href  = value;
+		 }
+ 	</script>
+	
+	<script src="https://maps.googleapis.com/maps/api/js"></script>
+    <script>
+      function initialize() {
+        var mapCanvas = document.getElementById('map-canvas');
+        var mapOptions = {
+          center: new google.maps.LatLng(-34.67583, -58.364872),
+          zoom: 18,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
+        var map = new google.maps.Map(mapCanvas, mapOptions)
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+	
+
+		<link rel="stylesheet" type="text/css" href="../../styles/sidetabs.css"/>
+	<div id="tabformcontent">
+		<fieldset title="Ubicación Geogr&aacute;fica">
+					<legend><b>Ubicación Geogr&aacute;fica</b></legend>
+
+
+					<table>
+    	<tr>        	
+			<td>
+                <table width="100%">
+                   
+			            <tr>			              
+			                <td valign="middle">			                	
+			                    	<div id="map-canvas" ></div>
+									<div>
+    									<b>Sede Avellaneda</b><br />
+    									Eva Perón y Güemes (S/N)<br />
+										Avellaneda - Provincia de Buenos Aires<br />
+    									Conmutador: 4265-0169 
+  									</div>
+												
+							</td>
+			            </tr>			            
+			        </table>
+                </td>
+                </tr>
+                </table>
+                
+       
+        </fieldset>
+		
+		<fieldset title="¿C&oacute;mo llegar?">
+					<legend><b>¿C&oacute;mo llegar?</b></legend>
+						<table>
+							<tr>
+								<td align="right" valign="top"><b>Colectivos:</b></td><td>74 - 85 - 95 - 100 - 154 - 247 C - 293 A - 295 B - 373 D</td>
+							</tr>							
+						
+						
+						</table>
+		</fieldset>
+		<p>
+			<center>
+				<a href="#" onclick="window.close();">Cerrar Ventana</a>
+			</center>
+		</p>
+		 </div>

@@ -1,34 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Psico UBA – Planificador de cursada
 
-## Getting Started
+Planner built on Next.js (App Router) to organize the week across multiple cátedras, with support for:
 
-First, run the development server:
+- Selecting prácticas (Prac) and automatically including the required Teóricos/Seminarios based on the official “Oblig.” mapping
+- Keeping selections across cátedra changes (multi‑cátedra plan)
+- Hover previews (Prac + its Teo/Sem)
+- Custom “grey zones” (busy blocks) you can add/remove and save locally
+- Local save/restore per academic term
+
+Data is consumed from a separate static dataset repo and versioned per term.
+
+### Data source
+
+- Default base: `https://santiago-musso.github.io/psico-uba-data`
+- App fetches files at: `${BASE}/${TERM}/{catedras|sections|meets}.json`
+- You can override the base via env: `NEXT_PUBLIC_DATA_BASE`
+
+### Term handling (IMPORTANT)
+
+- The app is currently configured for `TERM = 2025-2`.
+- Local storage keys are namespaced by term, so saved selections and grey zones are term‑specific and will not auto‑apply to a new term.
+- When the next term is published (e.g., `2026-1`):
+  1. Publish the new dataset to the data repo under `/${NEW_TERM}/...`
+  2. Update `TERM` in `src/app/schedule/page.tsx` (or make it an env var)
+  3. (Optional) Provide a term selector in the UI
+
+Local storage keys used:
+
+- Selections (Prac): `psico-uba:selection:${TERM}`
+- Grey zones: `psico-uba:gray:${TERM}`
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Environment (optional):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# to point to another dataset base
+NEXT_PUBLIC_DATA_BASE=https://<user>.github.io/psico-uba-data
+```
 
-## Learn More
+### Features in the UI
 
-To learn more about Next.js, take a look at the following resources:
+- Prac selection: check in the left sidebar. The calendar card shows an “✕” to remove that Prac (and its Teo/Sem) from the plan
+- Save button: stores selections and grey zones in local storage for the active term
+- Grey zones: add a day/time range and an optional note; remove on the calendar with “✕”
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Teo/Sem mapping comes from the official website’s “Oblig.” field and is enforced per Prac. Changing Teo means choosing a different Prac that requires that Teo
+- Parser logic in the data repo only records `chairLabel` when explicitly formatted as `LABEL - ...`. Otherwise it is left empty so docente names remain intact
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
