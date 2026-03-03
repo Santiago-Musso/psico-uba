@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { ProgramCode, Catedra, Section, Meet } from "@/lib/types";
 
-const TERM = "2025-2";
+const TERM = "2026-1";
 const STORAGE_KEY = `psico-uba:selection:${TERM}`;
 const ZONES_KEY = `psico-uba:gray:${TERM}`;
 
