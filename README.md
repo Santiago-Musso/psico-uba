@@ -1,57 +1,84 @@
-## Psico UBA – Planificador de cursada
+# PsicoUBA — Planificador de cursada
 
-Planner built on Next.js (App Router) to organize the week across multiple cátedras, with support for:
+Aplicación web para organizar el horario semanal de las carreras de la Facultad de Psicología (UBA). Permite seleccionar cátedras, elegir comisiones prácticas y visualizar todo en un calendario semanal interactivo.
 
-- Selecting prácticas (Prac) and automatically including the required Teóricos/Seminarios based on the official “Oblig.” mapping
-- Keeping selections across cátedra changes (multi‑cátedra plan)
-- Hover previews (Prac + its Teo/Sem)
-- Custom “grey zones” (busy blocks) you can add/remove and save locally
-- Local save/restore per academic term
+**Live:** [psico-uba.vercel.app](https://psico-uba.vercel.app)
 
-Data is consumed from a separate static dataset repo and versioned per term.
+## Stack
 
-### Data source
+- Next.js 15 (App Router), React 19, TypeScript 5
+- Tailwind CSS v4 (inline styles para el layout del calendario)
+- Datos estáticos consumidos desde [`psico-uba-data`](https://github.com/santiago-musso/psico-uba-data) vía GitHub Pages
 
-- Default base: `https://santiago-musso.github.io/psico-uba-data`
-- App fetches files at: `${BASE}/${TERM}/{catedras|sections|meets}.json`
-- You can override the base via env: `NEXT_PUBLIC_DATA_BASE`
+## Características
 
-### Term handling (IMPORTANT)
+### Flujo de 4 pasos (sidebar stepper)
+1. **Bloques de ocupado** — Marcá franjas horarias en las que no podés cursar (trabajo, idiomas, etc.)
+2. **Elegí tu programa** — Psicología, Profesorado, Musicoterapia o Terapia Ocupacional
+3. **Buscá tu cátedra** — Filtrá por materia o nombre del docente en tiempo real
+4. **Elegí tu práctica** — Seleccioná la comisión; el teórico requerido se agrega automáticamente
 
-- The app is currently configured for `TERM = 2025-2`.
-- Local storage keys are namespaced by term, so saved selections and grey zones are term‑specific and will not auto‑apply to a new term.
-- When the next term is published (e.g., `2026-1`):
-  1. Publish the new dataset to the data repo under `/${NEW_TERM}/...`
-  2. Update `TERM` in `src/app/schedule/page.tsx` (or make it an env var)
-  3. (Optional) Provide a term selector in the UI
+### Calendario
+- Vista semanal de lunes a viernes por defecto
+- Scroll horizontal para ver sábado y domingo cuando hay clases
+- Soporte completo para clases de domingo (dayNum 7)
+- Bloques grises (zonas ocupadas) con nota opcional
+- Hover sobre eventos para ver preview de la cátedra completa
 
-Local storage keys used:
+### Persistencia local
+- Selecciones y bloques grises guardados en `localStorage` con clave por cuatrimestre
+- Al guardar, el estado persiste entre sesiones en el mismo navegador
 
-- Selections (Prac): `psico-uba:selection:${TERM}`
-- Grey zones: `psico-uba:gray:${TERM}`
+## Data source
 
-### Development
+- Base por defecto: `https://santiago-musso.github.io/psico-uba-data`
+- El app fetcha: `${BASE}/${TERM}/{catedras|sections|meets|materias|sedes}.json`
+- Override vía env: `NEXT_PUBLIC_DATA_BASE`
+
+## Manejo de cuatrimestres
+
+El cuatrimestre activo está definido en `src/app/schedule/page.tsx` como `TERM = "2025-2"`.
+
+Las claves de localStorage son específicas por cuatrimestre:
+- Selecciones: `psico-uba:selection:${TERM}`
+- Bloques grises: `psico-uba:gray:${TERM}`
+
+Para agregar un nuevo cuatrimestre:
+1. Publicar los datos en el repo `psico-uba-data` bajo `/${NEW_TERM}/...`
+2. Actualizar `TERM` en `src/app/schedule/page.tsx`
+
+## Desarrollo local
 
 ```bash
+npm install
 npm run dev
-# open http://localhost:3000
+# http://localhost:3000
 ```
 
-Environment (optional):
+Para apuntar a datos locales (ver psico-uba-data):
 
 ```bash
-# to point to another dataset base
-NEXT_PUBLIC_DATA_BASE=https://<user>.github.io/psico-uba-data
+# .env.local
+NEXT_PUBLIC_DATA_BASE=http://localhost:4000
 ```
 
-### Features in the UI
+## Estructura de archivos clave
 
-- Prac selection: check in the left sidebar. The calendar card shows an “✕” to remove that Prac (and its Teo/Sem) from the plan
-- Save button: stores selections and grey zones in local storage for the active term
-- Grey zones: add a day/time range and an optional note; remove on the calendar with “✕”
+```
+src/
+├── app/
+│   ├── page.tsx          # Landing page con demo animada
+│   └── schedule/
+│       └── page.tsx      # Planificador principal (stepper + calendario)
+└── lib/
+    └── types.ts          # Tipos compartidos (Section, Meet, Sede, etc.)
+```
 
-### Notes
+## Programas soportados
 
-- Teo/Sem mapping comes from the official website’s “Oblig.” field and is enforced per Prac. Changing Teo means choosing a different Prac that requires that Teo
-- Parser logic in the data repo only records `chairLabel` when explicitly formatted as `LABEL - ...`. Otherwise it is left empty so docente names remain intact
-
+| Código | Nombre |
+|--------|--------|
+| PS | Licenciatura en Psicología |
+| PR | Profesorado en Psicología |
+| LM | Licenciatura en Musicoterapia |
+| TE | Licenciatura en Terapia Ocupacional |
