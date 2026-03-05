@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { ProgramCode, Catedra, Section, Meet } from "@/lib/types";
 
 const TERM = "2026-1";
@@ -31,6 +31,9 @@ function unique<T>(arr: T[]): T[] {
 
 const dayLabels = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 const TIME_COL_PX = 54;
+// MIN_BLOCK_PX: minimum px height needed to show all 5 content lines in a calendar square
+// (title ~16px + materiaName ~14px + docente ~14px + time ~16px + aula ~16px + 12px padding)
+const MIN_BLOCK_PX = 92;
 
 function normalize(str: string) {
   return str
@@ -48,8 +51,6 @@ export default function SchedulePage() {
   const [selectedPracIds, setSelectedPracIds] = useState<Set<string>>(new Set());
   const [catQuery, setCatQuery] = useState("");
   const [hoverPracId, setHoverPracId] = useState<string | null>(null);
-  const calendarRef = useRef<HTMLDivElement | null>(null);
-  const [calH, setCalH] = useState<number>(600);
   const [justSaved, setJustSaved] = useState(false);
   const [loadedFromStorage, setLoadedFromStorage] = useState(false);
   const [grayZones, setGrayZones] = useState<GrayZone[]>([]);
@@ -57,16 +58,6 @@ export default function SchedulePage() {
   const [nzStart, setNzStart] = useState<string>("08:00");
   const [nzEnd, setNzEnd] = useState<string>("09:00");
   const [nzNote, setNzNote] = useState<string>("");
-
-  useEffect(() => {
-    const el = calendarRef.current;
-    if (!el) return;
-    const resize = () => setCalH(el.clientHeight);
-    resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
 
   // Padding for first/last hour labels
   const padTop = 14;
@@ -180,17 +171,25 @@ export default function SchedulePage() {
     return m;
   }, [sections]);
 
-  const timeMin = useMemo(() => Math.min(8 * 60, ...selectedMeets.map((m) => m.startMin)), [selectedMeets]);
-  const timeMax = useMemo(() => Math.max(22 * 60, ...selectedMeets.map((m) => m.endMin)), [selectedMeets]);
-  const totalMin = Math.max(timeMax - timeMin, 1);
+  // Calendar time bounds: derived from ALL meets in the dataset (not just selected)
+  const timeMin = useMemo(() => {
+    const starts = meets.filter((m) => m.startMin > 0).map((m) => m.startMin);
+    return starts.length ? Math.min(...starts) : 7 * 60;
+  }, [meets]);
+  const timeMax = useMemo(() => {
+    const ends = meets.filter((m) => m.endMin > 0).map((m) => m.endMin);
+    return ends.length ? Math.max(...ends) : 23 * 60;
+  }, [meets]);
 
-  // Uniform minutes->Y mapper for the visible grid (depends on computed times)
-  const mapY = useMemo(() => {
-    return (minutes: number) => {
-      const contentH = Math.max(0, calH - padTop - padBottom);
-      return padTop + ((minutes - timeMin) / totalMin) * contentH;
-    };
-  }, [calH, timeMin, totalMin]);
+  // PX_PER_HOUR: computed so the shortest class is always tall enough to show all content
+  const PX_PER_HOUR = useMemo(() => {
+    const valid = meets.filter((m) => m.endMin > m.startMin && m.startMin > 0);
+    const minDurMin = valid.length ? Math.min(...valid.map((m) => m.endMin - m.startMin)) : 60;
+    return Math.ceil(MIN_BLOCK_PX / (minDurMin / 60));
+  }, [meets]);
+
+  const mapY = (minutes: number) => padTop + ((minutes - timeMin) / 60) * PX_PER_HOUR;
+  const calBodyHeight = padTop + padBottom + ((timeMax - timeMin) / 60) * PX_PER_HOUR;
 
   function togglePrac(id: string) {
     setSelectedPracIds((prev) => {
@@ -415,8 +414,9 @@ export default function SchedulePage() {
               <button type="button" onClick={addGrayZone} style={{ border: "1px solid #9ca3af", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>Añadir</button>
             </div>
           </div>
-          <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, overflow: "hidden", height: "calc(100vh - 40px)" }}>
-            <div style={{ display: "grid", gridTemplateColumns: `${TIME_COL_PX}px repeat(6, 1fr)`, background: "#f3f4f6", fontSize: 12 }}>
+          <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, overflow: "hidden", height: "calc(100vh - 80px)" }}>
+            <div style={{ height: "100%", overflowY: "auto" }}>
+            <div style={{ position: "sticky", top: 0, zIndex: 1, display: "grid", gridTemplateColumns: `${TIME_COL_PX}px repeat(6, 1fr)`, background: "#f3f4f6", fontSize: 12 }}>
               <div style={{ padding: 8, fontWeight: 700, color: "#6b7280" }}>Hora</div>
               {dayLabels.map((d, i) => (
                 <div key={i} style={{ padding: 8, fontWeight: 700, borderRight: i === 5 ? undefined : "1px solid #e5e7eb" }}>
@@ -424,7 +424,7 @@ export default function SchedulePage() {
                 </div>
               ))}
             </div>
-            <div ref={calendarRef} style={{ position: "relative", height: "calc(100% - 32px)" }}>
+            <div style={{ position: "relative", height: calBodyHeight }}>
               {(() => {
                 const nodes: ReactNode[] = [];
                 const startHour = Math.floor(timeMin / 60);
@@ -460,7 +460,8 @@ export default function SchedulePage() {
                 const top = mapY(m.startMin);
                 const bottom = mapY(m.endMin);
                 const height = Math.max(2, bottom - top);
-                const left = `calc(${TIME_COL_PX}px + ${( (m.dayNum - 1) / 6 ) * 100}% )`;
+                const r = (m.dayNum - 1) / 6;
+                const left = `calc(${r * 100}% + ${TIME_COL_PX * (1 - r)}px)`;
                 const width = `calc((100% - ${TIME_COL_PX}px)/6 - 4px)`;
                 const color = m.tipo === "Prac" ? "#2c9680" : m.tipo === "Teo" ? "#861f5c" : "#3b82f6";
                 return (
@@ -472,7 +473,8 @@ export default function SchedulePage() {
                 const top = mapY(m.startMin);
                 const bottom = mapY(m.endMin);
                 const height = Math.max(2, bottom - top);
-                const left = `calc(${TIME_COL_PX}px + ${( (m.dayNum - 1) / 6 ) * 100}% )`;
+                const r = (m.dayNum - 1) / 6;
+                const left = `calc(${r * 100}% + ${TIME_COL_PX * (1 - r)}px)`;
                 const width = `calc((100% - ${TIME_COL_PX}px)/6 - 4px)`;
                 const color = m.tipo === "Prac" ? "#2c9680" : m.tipo === "Teo" ? "#861f5c" : "#3b82f6";
                 const sec = sectionById.get(m.sectionId);
@@ -528,7 +530,8 @@ export default function SchedulePage() {
                 const top = mapY(z.startMin);
                 const bottom = mapY(z.endMin);
                 const height = Math.max(2, bottom - top);
-                const left = `calc(${TIME_COL_PX}px + ${( (z.dayNum - 1) / 6 ) * 100}% )`;
+                const r = (z.dayNum - 1) / 6;
+                const left = `calc(${r * 100}% + ${TIME_COL_PX * (1 - r)}px)`;
                 const width = `calc((100% - ${TIME_COL_PX}px)/6 - 4px)`;
                 return (
                   <div key={z.id} style={{ position: "absolute", top, left, width, height, background: "#9ca3af55", border: "1px dashed #6b7280", borderRadius: 6 }}>
@@ -539,6 +542,7 @@ export default function SchedulePage() {
                   </div>
                 );
               })}
+            </div>
             </div>
           </div>
         </section>
