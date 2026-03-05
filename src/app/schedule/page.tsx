@@ -508,6 +508,16 @@ export default function SchedulePage() {
                         </button>
                       )}
                     </div>
+                    {sec && (
+                      <div style={{ opacity: 0.9, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {sec.materiaName}
+                      </div>
+                    )}
+                    {sec && sec.docentes.length > 0 && (
+                      <div style={{ opacity: 0.8, fontSize: 11, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {sec.docentes[0]}
+                      </div>
+                    )}
                     <div>{m.start}–{m.end}</div>
                     <div style={{ opacity: 0.85 }}>{m.aulaCode}</div>
                   </div>
