@@ -32,21 +32,16 @@ const STEP_EVENTS: Ev[][] = [
     { tipo: "", label: "", materia: "", note: "Trabajo", time: "14:00–18:00", day: 2, color: "#6b7280", top: toP(14,0), h: durP(240), delay: 0.1, isGray: true },
     { tipo: "", label: "", materia: "", note: "Inglés",  time: "19:00–20:30", day: 4, color: "#6b7280", top: toP(19,0), h: durP(90),  delay: 0.4, isGray: true },
   ],
-  // 1 — Buscá tu cátedra
+  // 1 — Elegí tu programa (empty calendar)
   [],
-  // 2 — Elegí tu práctica
+  // 2 — Buscá tu cátedra (empty calendar)
+  [],
+  // 3 — Elegí tu práctica (one cátedra selected)
   [
     { tipo: "Prac", label: "1", materia: "Biología del Comp.", time: "09:15–10:45", day: 0, color: "#2c9680", top: toP(9,15), h: durP(90), delay: 0 },
     { tipo: "Teo",  label: "I", materia: "Biología del Comp.", time: "10:00–11:30", day: 1, color: "#861f5c", top: toP(10,0),  h: durP(90), delay: 0.3 },
   ],
-  // 3 — Agregá más cátedras
-  [
-    { tipo: "Prac", label: "1", materia: "Biología del Comp.", time: "09:15–10:45", day: 0, color: "#2c9680", top: toP(9,15), h: durP(90), delay: 0 },
-    { tipo: "Teo",  label: "I", materia: "Biología del Comp.", time: "10:00–11:30", day: 1, color: "#861f5c", top: toP(10,0),  h: durP(90), delay: 0.1 },
-    { tipo: "Prac", label: "5", materia: "Psicología Clínica", time: "14:00–15:30", day: 2, color: "#7c3aed", top: toP(14,0),  h: durP(90), delay: 0.35 },
-    { tipo: "Teo",  label: "I", materia: "Psicología Clínica", time: "18:00–19:30", day: 3, color: "#be185d", top: toP(18,0),  h: durP(90), delay: 0.55 },
-  ],
-  // 4 — Guardá tu horario
+  // 4 — Guardá tu horario (full schedule)
   [
     { tipo: "Prac", label: "1", materia: "Biología del Comp.", time: "09:15–10:45", day: 0, color: "#2c9680", top: toP(9,15), h: durP(90), delay: 0 },
     { tipo: "Teo",  label: "I", materia: "Biología del Comp.", time: "10:00–11:30", day: 1, color: "#861f5c", top: toP(10,0),  h: durP(90), delay: 0.1 },
@@ -106,152 +101,192 @@ function MiniCal({ events, height, uid }: { events: Ev[]; height: number; uid: s
   );
 }
 
+// ── Mini sidebar helpers ────────────────────────────────────
+function MiniHeader() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f3f4f6" }}>
+      <span style={{ fontWeight: 800, fontSize: 12, letterSpacing: -0.3, color: "#111827" }}>🎓 PsicoUBA</span>
+      <div style={{ background: "#2563eb", color: "#fff", borderRadius: 5, padding: "3px 9px", fontSize: 10, fontWeight: 700 }}>💾 Guardar</div>
+    </div>
+  );
+}
+
+function MiniStepRow({ active }: { active: number }) {
+  const labels = ["Bloques", "Programa", "Buscar", "Práctica"];
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
+      {labels.map((label, i) => (
+        <div key={i} style={{ display: "flex", flex: i < labels.length - 1 ? 1 : 0, alignItems: "flex-start" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
+            <div style={{
+              width: 20, height: 20, borderRadius: "50%",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 9, fontWeight: 800,
+              background: i < active ? "#16a34a" : i === active ? "#2563eb" : "#e5e7eb",
+              color: i < active || i === active ? "#fff" : "#9ca3af",
+            }}>
+              {i < active ? "✓" : i + 1}
+            </div>
+            <div style={{ fontSize: 8, color: i === active ? "#2563eb" : i < active ? "#374151" : "#9ca3af", fontWeight: i === active ? 700 : 400, textAlign: "center", lineHeight: 1.2, maxWidth: 36 }}>
+              {label}
+            </div>
+          </div>
+          {i < labels.length - 1 && (
+            <div style={{ flex: 1, height: 1.5, background: i < active ? "#16a34a" : "#e5e7eb", marginTop: 9, marginLeft: 3, marginRight: 3 }} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Step sidebar ───────────────────────────────────────────
 function StepSidebar({ step }: { step: number }) {
   // 0 — Bloques de ocupado
   if (step === 0) return (
     <div>
-      <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Bloque gris</div>
-      <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
-        <select disabled style={{ padding: "4px 6px", borderRadius: 5, border: "1px solid #d1d5db", fontSize: 11, background: "#fff", color: "#374151" }}>
-          <option>Mié</option>
-        </select>
-        <input readOnly value="14:00" style={{ width: 44, padding: "4px 5px", borderRadius: 5, border: "1px solid #d1d5db", fontSize: 11, textAlign: "center" }} />
-        <span style={{ fontSize: 10, color: "#9ca3af" }}>→</span>
-        <input readOnly value="18:00" style={{ width: 44, padding: "4px 5px", borderRadius: 5, border: "1px solid #d1d5db", fontSize: 11, textAlign: "center" }} />
-        <input readOnly value="Trabajo" style={{ flex: 1, minWidth: 50, padding: "4px 6px", borderRadius: 5, border: "1px solid #d1d5db", fontSize: 11 }} />
-        <button disabled style={{ padding: "4px 8px", borderRadius: 5, border: "1px solid #9ca3af", fontSize: 11, background: "#f9fafb", color: "#374151", cursor: "default" }}>Añadir</button>
+      <MiniHeader />
+      <MiniStepRow active={0} />
+      <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginBottom: 7, textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Bloque gris</div>
+      <div style={{ display: "flex", gap: 3, alignItems: "center", marginBottom: 8, flexWrap: "wrap" as const }}>
+        <select disabled style={{ padding: "3px 5px", borderRadius: 5, border: "1px solid #d1d5db", fontSize: 10, background: "#fff", color: "#374151" }}><option>Mié</option></select>
+        <input readOnly value="14:00" style={{ width: 40, padding: "3px 4px", borderRadius: 5, border: "1px solid #d1d5db", fontSize: 10, textAlign: "center" as const }} />
+        <span style={{ fontSize: 9, color: "#9ca3af" }}>→</span>
+        <input readOnly value="18:00" style={{ width: 40, padding: "3px 4px", borderRadius: 5, border: "1px solid #d1d5db", fontSize: 10, textAlign: "center" as const }} />
+        <input readOnly value="Trabajo" style={{ flex: 1, minWidth: 40, padding: "3px 5px", borderRadius: 5, border: "1px solid #d1d5db", fontSize: 10 }} />
+        <button disabled style={{ padding: "3px 7px", borderRadius: 5, border: "1px solid #9ca3af", fontSize: 10, background: "#f9fafb", color: "#374151", cursor: "default" }}>Añadir</button>
       </div>
-      {[
-        { note: "Trabajo", time: "Mié 14:00–18:00" },
-        { note: "Inglés",  time: "Vie 19:00–20:30" },
-      ].map((z) => (
-        <div key={z.note} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 6, background: "#f3f4f6", border: "1px dashed #9ca3af", marginBottom: 5 }}>
+      {[{ note: "Trabajo", time: "Mié 14:00–18:00" }, { note: "Inglés", time: "Vie 19:00–20:30" }].map((z) => (
+        <div key={z.note} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 8px", borderRadius: 6, background: "#f3f4f6", border: "1px dashed #9ca3af", marginBottom: 4 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 11 }}>{z.note}</div>
-            <div style={{ fontSize: 10, color: "#6b7280" }}>{z.time}</div>
+            <div style={{ fontWeight: 700, fontSize: 10 }}>{z.note}</div>
+            <div style={{ fontSize: 9, color: "#6b7280" }}>{z.time}</div>
           </div>
-          <span style={{ fontSize: 13, color: "#9ca3af" }}>✕</span>
+          <span style={{ fontSize: 11, color: "#9ca3af" }}>✕</span>
         </div>
       ))}
-      <div style={{ marginTop: 10, padding: "7px 10px", borderRadius: 6, background: "#fefce8", border: "1px solid #fde68a", fontSize: 11, color: "#92400e", lineHeight: 1.5 }}>
-        💡 Usalo para trabajo, deportes, idiomas o cualquier actividad fija.
-      </div>
+      <button disabled style={{ marginTop: 8, width: "100%", padding: "6px", borderRadius: 7, background: "#2563eb", color: "#fff", border: "none", fontWeight: 700, fontSize: 10, cursor: "default" }}>
+        Continuar →
+      </button>
     </div>
   );
 
-  // 1 — Buscá tu cátedra
+  // 1 — Elegí tu programa
   if (step === 1) return (
     <div>
-      <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>Buscar cátedra</div>
-      <div style={{ position: "relative", marginBottom: 8 }}>
-        <input readOnly value="biología" style={{ width: "100%", padding: "6px 10px", border: "2px solid #2563eb", borderRadius: 6, fontSize: 12, boxSizing: "border-box", outline: "none" }} />
-        <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 10, color: "#9ca3af" }}>▼</span>
+      <MiniHeader />
+      <MiniStepRow active={1} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {[
+          { name: "Licenciatura en Psicología", active: true },
+          { name: "Profesorado en Psicología", active: false },
+          { name: "Licenciatura en Musicoterapia", active: false },
+          { name: "Licenciatura en Terapia Ocupacional", active: false },
+        ].map((p) => (
+          <div key={p.name} style={{
+            padding: "7px 10px", borderRadius: 7, fontSize: 11,
+            fontWeight: p.active ? 700 : 400,
+            border: `1.5px solid ${p.active ? "#2563eb" : "#e5e7eb"}`,
+            background: p.active ? "#eff6ff" : "#fff",
+            color: p.active ? "#2563eb" : "#374151",
+          }}>
+            {p.name}
+          </div>
+        ))}
       </div>
+    </div>
+  );
+
+  // 2 — Buscá tu cátedra
+  if (step === 2) return (
+    <div>
+      <MiniHeader />
+      <MiniStepRow active={2} />
+      <input readOnly value="biología" style={{ width: "100%", padding: "6px 10px", border: "1.5px solid #2563eb", borderRadius: 7, fontSize: 11, boxSizing: "border-box" as const, outline: "none", marginBottom: 8 }} />
       {[
-        { name: "Biología del Comportamiento", doc: "— Muzio, Rubén Néstor", active: true },
-        { name: "Psicología Clínica y Psicoterapia", doc: "— Fernández Álvarez, H.", active: false },
-        { name: "Análisis y Modif. de la Conducta", doc: "— Dahab, Jose Norberto", active: false },
+        { name: "Biología del Comportamiento", doc: "Muzio, Rubén Néstor", active: true },
+        { name: "Psicología Clínica y Psicoterapia", doc: "Fernández Álvarez, H.", active: false },
+        { name: "Análisis y Modif. de la Conducta", doc: "Dahab, Jose Norberto", active: false },
       ].map((c) => (
         <div key={c.name} style={{
-          padding: "7px 10px", borderRadius: 6, marginBottom: 3,
+          padding: "6px 10px", borderRadius: 6, marginBottom: 3,
           background: c.active ? "#eef2ff" : "#fff",
-          border: `1px solid ${c.active ? "#c7d2fe" : "#f3f4f6"}`,
+          border: "none", borderLeft: `3px solid ${c.active ? "#4338ca" : "transparent"}`,
+          borderBottom: "1px solid #f3f4f6",
         }}>
-          <div style={{ fontSize: 11, fontWeight: c.active ? 700 : 400, color: c.active ? "#4338ca" : "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</div>
-          <div style={{ fontSize: 10, color: "#6b7280" }}>{c.doc}</div>
+          <div style={{ fontSize: 10, fontWeight: c.active ? 700 : 500, color: c.active ? "#4338ca" : "#111827", whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</div>
+          <div style={{ fontSize: 9, color: "#6b7280" }}>{c.doc}</div>
         </div>
       ))}
     </div>
   );
 
-  // 2 — Elegí tu práctica
-  if (step === 2) return (
+  // 3 — Elegí tu práctica
+  if (step === 3) return (
     <div>
-      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Prácticas</div>
+      <MiniHeader />
+      <MiniStepRow active={3} />
+      <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginBottom: 7, textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Prácticas</div>
       {[
         { label: "Prac 1", docente: "Daneri, M. Florencia", info: "Lun 09:15–10:45 · IN-217", checked: true },
         { label: "Prac 2", docente: "Fernández, Rocío C.",  info: "Jue 14:30–16:00 · IN-208", checked: false },
         { label: "Prac 3", docente: "Calleja, Nicolás",    info: "Mar 12:45–14:15 · IN-216", checked: false },
       ].map((p) => (
         <div key={p.label} style={{
-          display: "flex", gap: 8, alignItems: "flex-start",
-          padding: "6px 8px", borderRadius: 6, marginBottom: 4,
-          border: `1px solid ${p.checked ? "#a7f3d0" : "#e5e7eb"}`,
+          display: "flex", gap: 7, alignItems: "flex-start",
+          padding: "6px 8px", borderRadius: 7, marginBottom: 4,
+          border: `1.5px solid ${p.checked ? "#a7f3d0" : "#e5e7eb"}`,
           background: p.checked ? "#f0fdf4" : "#fff",
         }}>
-          <span style={{ fontSize: 13, color: p.checked ? "#16a34a" : "#9ca3af", flexShrink: 0, marginTop: 1 }}>{p.checked ? "☑" : "☐"}</span>
+          <span style={{ fontSize: 12, color: p.checked ? "#16a34a" : "#9ca3af", flexShrink: 0, marginTop: 1 }}>{p.checked ? "☑" : "☐"}</span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 11 }}>{p.label} — {p.docente}</div>
-            <div style={{ fontSize: 10, color: "#6b7280" }}>{p.info}</div>
+            <div style={{ fontWeight: 700, fontSize: 10, color: p.checked ? "#15803d" : "#111827" }}>{p.label} — {p.docente}</div>
+            <div style={{ fontSize: 9, color: "#6b7280" }}>{p.info}</div>
           </div>
         </div>
       ))}
     </div>
   );
 
-  // 3 — Agregá más cátedras
-  if (step === 3) return (
-    <div>
-      <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>Agregar otra cátedra</div>
-      <div style={{ position: "relative", marginBottom: 8 }}>
-        <input readOnly value="psicología clínica" style={{ width: "100%", padding: "6px 10px", border: "2px solid #2563eb", borderRadius: 6, fontSize: 12, boxSizing: "border-box", outline: "none" }} />
-        <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 10, color: "#9ca3af" }}>▼</span>
-      </div>
-      {[
-        { name: "Psicología Clínica y Psicoterapia", doc: "— Fernández Álvarez, H.", active: true },
-        { name: "Clínica Psicológica y Psicoterapias", doc: "— Waisbrot, Daniel", active: false },
-      ].map((c) => (
-        <div key={c.name} style={{
-          padding: "7px 10px", borderRadius: 6, marginBottom: 3,
-          background: c.active ? "#eef2ff" : "#fff",
-          border: `1px solid ${c.active ? "#c7d2fe" : "#f3f4f6"}`,
-        }}>
-          <div style={{ fontSize: 11, fontWeight: c.active ? 700 : 400, color: c.active ? "#4338ca" : "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</div>
-          <div style={{ fontSize: 10, color: "#6b7280" }}>{c.doc}</div>
-        </div>
-      ))}
-      <div style={{ marginTop: 8, padding: "7px 10px", borderRadius: 6, background: "#f0fdf4", border: "1px solid #bbf7d0", fontSize: 11, color: "#166534", fontWeight: 600 }}>
-        ✓ Prac 5 + Teo I agregados al calendario
-      </div>
-    </div>
-  );
-
-  // 4 — Guardá tu horario
+  // 4 — Guardá tu horario (all steps done)
   return (
     <div>
-      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Tu horario</div>
+      <MiniHeader />
+      <MiniStepRow active={4} />
       {[
         { tipo: "Prac", label: "1", materia: "Biología del Comp.", color: "#2c9680", info: "Lun 09:15–10:45 · IN-217" },
         { tipo: "Teo",  label: "I", materia: "Biología del Comp.", color: "#861f5c", info: "Mar 10:00–11:30 · HY-022" },
         { tipo: "Prac", label: "5", materia: "Psicología Clínica",  color: "#7c3aed", info: "Mié 14:00–15:30 · AU-101" },
         { tipo: "Teo",  label: "I", materia: "Psicología Clínica",  color: "#be185d", info: "Jue 18:00–19:30 · HY-011" },
       ].map((s, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "6px 10px", borderRadius: 6, background: s.color + "15", border: `1px solid ${s.color}35`, marginBottom: 5 }}>
-          <div style={{ width: 8, height: 8, borderRadius: 2, background: s.color, flexShrink: 0, marginTop: 3 }} />
+        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 7, padding: "5px 8px", borderRadius: 6, background: s.color + "15", border: `1px solid ${s.color}35`, marginBottom: 4 }}>
+          <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0, marginTop: 3 }} />
           <div>
-            <div style={{ fontWeight: 700, fontSize: 11, color: s.color }}>{s.tipo} {s.label} — {s.materia}</div>
-            <div style={{ fontSize: 10, color: "#6b7280" }}>{s.info}</div>
+            <div style={{ fontWeight: 700, fontSize: 10, color: s.color }}>{s.tipo} {s.label} — {s.materia}</div>
+            <div style={{ fontSize: 9, color: "#6b7280" }}>{s.info}</div>
           </div>
         </div>
       ))}
-      <button disabled style={{ width: "100%", padding: "8px", borderRadius: 6, background: "#2563eb", color: "#fff", fontWeight: 700, fontSize: 12, border: "none", cursor: "default", marginTop: 8 }}>
+      <button disabled style={{ width: "100%", padding: "7px", borderRadius: 6, background: "#2563eb", color: "#fff", fontWeight: 700, fontSize: 11, border: "none", cursor: "default", marginTop: 6 }}>
         💾 Guardar selección
       </button>
-      <div style={{ marginTop: 8, padding: "7px 10px", borderRadius: 6, background: "#fef3c7", border: "1px solid #fcd34d", fontSize: 10, color: "#92400e", lineHeight: 1.55 }}>
-        ⚠️ Se guarda solo en este navegador. Si borrás los datos o usás otra computadora, perderás tu selección.
+      <div style={{ marginTop: 6, padding: "6px 8px", borderRadius: 6, background: "#fef3c7", border: "1px solid #fcd34d", fontSize: 9, color: "#92400e", lineHeight: 1.5 }}>
+        ⚠️ Se guarda solo en este navegador.
       </div>
+      <button disabled style={{ marginTop: 6, width: "100%", padding: "5px", borderRadius: 6, background: "#f9fafb", color: "#374151", border: "1.5px solid #e5e7eb", fontWeight: 600, fontSize: 10, cursor: "default" }}>
+        + Agregar otra cátedra
+      </button>
     </div>
   );
 }
 
 // ── Page ───────────────────────────────────────────────────
 const STEPS = [
-  { title: "Bloques de ocupado",  desc: "Marcá trabajo, deporte, idiomas o cualquier actividad fija para ver qué horarios tenés disponibles antes de elegir materias." },
-  { title: "Buscá tu cátedra",   desc: "Escribí la materia o el docente. Filtra en tiempo real entre todas las cátedras del programa." },
-  { title: "Elegí tu práctica",  desc: "Cada comisión muestra docente, aula y horario. Marcá la que te quede mejor — el teórico se agrega solo." },
-  { title: "Agregá más cátedras", desc: "Podés buscar y agregar todas las materias que necesitás. Cada selección se suma al calendario." },
-  { title: "Guardá tu horario",  desc: "Guardá tu selección con un clic. Se almacena localmente en el navegador de esta computadora." },
+  { title: "Bloques de ocupado",  desc: "Marcá trabajo, deportes, idiomas o cualquier franja ocupada para ver desde el principio qué horarios te quedan libres." },
+  { title: "Elegí tu programa",   desc: "Seleccioná Psicología, Profesorado, Musicoterapia o Terapia Ocupacional. Las cátedras disponibles se filtran automáticamente." },
+  { title: "Buscá tu cátedra",   desc: "Escribí la materia o el docente. Filtrá en tiempo real entre todas las cátedras del programa seleccionado." },
+  { title: "Elegí tu práctica",  desc: "Cada comisión muestra docente, aula y horario. Marcá la que te quede mejor — el teórico requerido se agrega solo." },
+  { title: "Guardá tu horario",  desc: "Guardá tu selección con un clic. Se almacena en este navegador. Podés volver a agregar más cátedras en cualquier momento." },
 ];
 
 const FEATURES = [
