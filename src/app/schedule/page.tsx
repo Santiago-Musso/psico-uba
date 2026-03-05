@@ -500,7 +500,7 @@ export default function SchedulePage() {
           {/* ── Step 4: Prácticas ── */}
           <div>
             <StepHeader
-              num={4} title="Elegí tu práctica"
+              num={4} title="Elegí tu comisión"
               summary={selectedPracIds.size > 0 ? `${selectedPracIds.size} seleccionada${selectedPracIds.size !== 1 ? "s" : ""}` : undefined}
               active={sidebarStep === 4} done={false} locked={sidebarStep < 4}
               onClick={() => setSidebarStep(4)}

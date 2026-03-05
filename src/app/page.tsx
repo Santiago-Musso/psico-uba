@@ -112,7 +112,7 @@ function MiniHeader() {
 }
 
 function MiniStepRow({ active }: { active: number }) {
-  const labels = ["Bloques", "Programa", "Buscar", "Práctica"];
+  const labels = ["Bloques", "Programa", "Buscar", "Comisión"];
   return (
     <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
       {labels.map((label, i) => (
@@ -285,7 +285,7 @@ const STEPS = [
   { title: "Bloques de ocupado",  desc: "Marcá trabajo, deportes, idiomas o cualquier franja ocupada para ver desde el principio qué horarios te quedan libres." },
   { title: "Elegí tu programa",   desc: "Seleccioná Psicología, Profesorado, Musicoterapia o Terapia Ocupacional. Las cátedras disponibles se filtran automáticamente." },
   { title: "Buscá tu cátedra",   desc: "Escribí la materia o el docente. Filtrá en tiempo real entre todas las cátedras del programa seleccionado." },
-  { title: "Elegí tu práctica",  desc: "Cada comisión muestra docente, aula y horario. Marcá la que te quede mejor — el teórico requerido se agrega solo." },
+  { title: "Elegí tu comisión",  desc: "Cada comisión muestra docente, aula y horario. Marcá la que te quede mejor — el teórico requerido se agrega solo." },
   { title: "Guardá tu horario",  desc: "Guardá tu selección con un clic. Se almacena en este navegador. Podés volver a agregar más cátedras en cualquier momento." },
 ];
 

@@ -16,7 +16,7 @@ Aplicación web para organizar el horario semanal de las carreras de la Facultad
 1. **Bloques de ocupado** — Marcá franjas horarias en las que no podés cursar (trabajo, idiomas, etc.)
 2. **Elegí tu programa** — Psicología, Profesorado, Musicoterapia o Terapia Ocupacional
 3. **Buscá tu cátedra** — Filtrá por materia o nombre del docente en tiempo real
-4. **Elegí tu práctica** — Seleccioná la comisión; el teórico requerido se agrega automáticamente
+4. **Elegí tu comisión** — Seleccioná la comisión práctica; el teórico requerido se agrega automáticamente
 
 ### Calendario
 - Vista semanal de lunes a viernes por defecto
